@@ -52,9 +52,9 @@ function query() {
 	if (this.fromCalls > 1) throw new Error('Duplicate FROM')
 	return groupBy(this.fromValue
 			// Where
-			.filter(this.whereValue)
+			.filter(this.whereValue))
 			// Select
-			.map(this.selectValue))
+			.map(this.selectValue)
 
   }
 

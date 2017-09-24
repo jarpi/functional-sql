@@ -91,6 +91,13 @@ describe('SQL - like parser', function() {
 			assert.deepEqual(query().select().from(objs).groupBy(profession).execute(), expectedObjs)
 		})
 
+        it('Should SELECT clause apply with GROUPBY', function() {
+            function professionGroup(group) { return group[0] }
+            function profession(o) { return o.profession }
+			const expectedObjs = ["teacher","scientific","politician"]
+			assert.deepEqual(query().select(professionGroup).from(objs).groupBy(profession).execute(), expectedObjs)
+		})
+
 
 	})
 })
