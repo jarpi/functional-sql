@@ -31,20 +31,34 @@ function query() {
 		return this
 	}
 
-    this.execute = function() {
-		if (this.selectCalls > 1) throw new Error('Duplicate SELECT')
-		if (this.fromCalls > 1) throw new Error('Duplicate FROM')
-		return this.fromValue
-				// Where
-				.filter(this.whereValue)
-				// Select
-				.map(this.selectValue)
-				// GroupBy
-				.reduce((prev, o) => { if (prev.indexOf(this.groupValue(o)) === -1){ prev.push(this.groupValue(o));} return prev},[])
-.map((o) => {return [o, this.fromValue.filter((oo)=> {return this.groupValue(oo) === o})]})
-    }
+  const groupBy = (arr) => {
+    if (this.groupCalls < 1) return arr
+    return arr.reduce( (prev, o) => {
+      if (prev.indexOf(this.groupValue(o)) === -1) {
+        prev.push(this.groupValue(o));
+      }
+      return prev
+    },[])
+    .map ((o) => {
+    return [o,
+      this.fromValue.filter( (oo) => {
+        return this.groupValue(oo) === o
+      })]
+    })
+  }
 
-    return this
+  this.execute = function() {
+	if (this.selectCalls > 1) throw new Error('Duplicate SELECT')
+	if (this.fromCalls > 1) throw new Error('Duplicate FROM')
+	return groupBy(this.fromValue
+			// Where
+			.filter(this.whereValue)
+			// Select
+			.map(this.selectValue))
+
+  }
+
+  return this
 }
 
 module.exports = query
