@@ -91,6 +91,23 @@ describe('SQL - like parser', function() {
 			assert.deepEqual(query().select().from(objs).groupBy(profession).execute(), expectedObjs)
 		})
 
+        it('Should WHERE clause apply with GROUPBY', function() {
+			function isTeacher(o) { return o.profession === 'teacher' }
+			function profession(o) { return o.profession }
+			const expectedObjs =
+      [
+          ['teacher',
+            [
+              {name: 'Peter', profession: 'teacher', age: 20, maritalStatus: 'married'},
+              {name: 'Michael', profession: 'teacher', age: 50, maritalStatus: 'single'},
+              {name: 'Peter', profession: 'teacher', age: 20, maritalStatus: 'married'}
+            ]
+          ]
+	]
+			assert.deepEqual(query().select().from(objs).where(isTeacher).groupBy(profession).execute(), expectedObjs)
+		})
+
+
         it('Should SELECT clause apply with GROUPBY', function() {
             function professionGroup(group) { return group[0] }
             function profession(o) { return o.profession }
