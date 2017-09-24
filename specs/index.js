@@ -5,7 +5,7 @@ const query = require('../index.js')
 
 describe('SQL - like parser', function() {
     describe('SELECT', function() {
-            const nums = [1,2,3]
+            const nums = [1,2,3,4,5,6,7,8,9]
 			const objs = [
 			  {name: 'Peter', profession: 'teacher', age: 20, maritalStatus: 'married'},
 			  {name: 'Michael', profession: 'teacher', age: 50, maritalStatus: 'single'},
@@ -114,6 +114,42 @@ describe('SQL - like parser', function() {
 			const expectedObjs = ["teacher","scientific","politician"]
 			assert.deepEqual(query().select(professionGroup).from(objs).groupBy(profession).execute(), expectedObjs)
 		})
+
+		it('Should GROUPBY by custom function', function() {
+			function isEven(n) { return n%2 === 0 }
+			function parity(n) { return isEven(n) ? 'even' : 'odd' }
+			const expectedObjs = [['odd',[1,3,5,7,9]], ['even',[2,4,6,8]]]
+			assert.deepEqual(query().select().from(nums).groupBy(parity).execute(), expectedObjs)
+		})
+
+		it('Should HAVING apply', function() {
+			function isEven(n) { return n%2 === 0 }
+			function parity(n) { return isEven(n) ? 'even' : 'odd' }
+			function odd(group) { return group[0] === 'odd' }
+			const expectedObjs = [['odd',[1,3,5,7,9]]]
+			assert.deepEqual(query().select().from(nums).groupBy(parity).having(odd).execute(), expectedObjs)
+		})
+
+		it('Should ORDER apply', function() {
+			function descendentCompare(number1, number2) { return number2 - number1 }
+			const expectedObjs = [9,8,7,6,5,4,3,2,1]
+			assert.deepEqual(query().select().from(nums).orderBy(descendentCompare).execute(), expectedObjs)
+		})
+
+		it.skip('Should GROUPBY by multiple fields', function() {
+			function isEven(n) { return n%2 === 0 }
+			function parity(n) { return isEven(n) ? 'even' : 'odd' }
+			function isPrime(n) { if(n < 2) { return false; } var divisor = 2; for(; number%divisor !==0; divisor++) return divisor === n;  }
+			function prime(n) { return isPrime(number) ? 'prime' : 'divisible' }
+			const expectedObjs = [["odd",[["divisible",[1,9]],["prime",[3,5,7]]]],["even",[["prime",[2]],["divisible",[4,6,8]]]]]
+			assert.deepEqual(query().select().from(nums).groupBy(parity, prime).execute(), expectedObjs)
+		})
+
+
+		it.skip('Should FROM by multiple collections', function(){})
+		it.skip('Should WHERE by multiple fields', function(){})
+		it.skip('Should HAVING by multiple fields', function(){})
+		it.skip('Should ORDER GROUPBY by multiple fields', function(){})
 
 
 	})

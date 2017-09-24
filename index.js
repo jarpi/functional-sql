@@ -3,10 +3,14 @@ function query() {
     this.selectValue = function(o) { return o }
     this.whereValue = function(o) { return o }
     this.groupValue = function(o) { return o }
+    this.havingValue = function(o) { return o }
+    this.orderValue = function(o) { return o }
     this.fromValue = []
 	this.fromCalls = 0
 	this.selectCalls = 0
 	this.groupCalls = 0
+	this.havingCalls = 0
+	this.orderCalls = 0
 
     this.select = function(f) {
 		this.selectValue = f || this.selectValue
@@ -31,6 +35,18 @@ function query() {
 		return this
 	}
 
+	this.having = function(v) {
+		this.havingValue = v
+		this.havingCalls++
+		return this
+	}
+
+	this.orderBy = function(v) {
+		this.orderValue = v
+		this.orderCalls++
+		return this
+	}
+
   const groupBy = (arr) => {
     if (this.groupCalls < 1) return arr
     return arr.reduce( (prev, o) => {
@@ -47,12 +63,23 @@ function query() {
     })
   }
 
+  const havingFilter = (arr) => {
+		if (!this.havingCalls) return arr
+		if (!this.groupCalls) throw new Error('Call HAVING without GROUPS')
+		return arr.filter(this.havingValue)
+	}
+
+  const orderFilter = (arr) => {
+		if (!this.orderCalls) return arr
+		return arr.sort(this.orderValue)
+	}
+
   this.execute = function() {
 	if (this.selectCalls > 1) throw new Error('Duplicate SELECT')
 	if (this.fromCalls > 1) throw new Error('Duplicate FROM')
-	return groupBy(this.fromValue
+	return orderFilter(havingFilter(groupBy(this.fromValue
 			// Where
-			.filter(this.whereValue))
+			.filter(this.whereValue))))
 			// Select
 			.map(this.selectValue)
 
