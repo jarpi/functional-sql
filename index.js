@@ -30,7 +30,7 @@ function query() {
 	}
 
 	this.groupBy = function(v) {
-		this.groupValue = v
+		this.groupValue = Array.prototype.slice.call(arguments)
 		this.groupCalls++
 		return this
 	}
@@ -47,19 +47,21 @@ function query() {
 		return this
 	}
 
-  const groupBy = (arr) => {
+  const groupBy = (arr, i) => {
+    const idx = i || 0
     if (this.groupCalls < 1) return arr
+    if (!this.groupValue[idx]) return arr
     return arr.reduce( (prev, o) => {
-      if (prev.indexOf(this.groupValue(o)) === -1) {
-        prev.push(this.groupValue(o));
+      if (prev.indexOf(this.groupValue[idx](o)) === -1) {
+        prev.push(this.groupValue[idx](o));
       }
       return prev
     },[])
     .map ((o) => {
     return [o,
-      this.fromValue.filter( (oo) => {
-        return this.groupValue(oo) === o
-      })]
+      groupBy(arr.filter( (oo) => {
+        return this.groupValue[idx](oo) === o
+      }), idx+1)]
     })
   }
 
@@ -77,7 +79,9 @@ function query() {
   this.execute = function() {
 	if (this.selectCalls > 1) throw new Error('Duplicate SELECT')
 	if (this.fromCalls > 1) throw new Error('Duplicate FROM')
-	return orderFilter(havingFilter(groupBy(this.fromValue
+      return orderFilter(havingFilter(
+            // Group by
+            groupBy(this.fromValue
 			// Where
 			.filter(this.whereValue))))
 			// Select

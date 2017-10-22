@@ -136,15 +136,14 @@ describe('SQL - like parser', function() {
 			assert.deepEqual(query().select().from(nums).orderBy(descendentCompare).execute(), expectedObjs)
 		})
 
-		it.skip('Should GROUPBY by multiple fields', function() {
+		it('Should GROUPBY by multiple fields', function() {
 			function isEven(n) { return n%2 === 0 }
 			function parity(n) { return isEven(n) ? 'even' : 'odd' }
-			function isPrime(n) { if(n < 2) { return false; } var divisor = 2; for(; number%divisor !==0; divisor++) return divisor === n;  }
-			function prime(n) { return isPrime(number) ? 'prime' : 'divisible' }
+			function isPrime(n) { if(n < 2) { return false; } var divisor = 2; for(; n%divisor !==0; divisor++); return divisor === n;  }
+			function prime(n) { return isPrime(n) ? 'prime' : 'divisible' }
 			const expectedObjs = [["odd",[["divisible",[1,9]],["prime",[3,5,7]]]],["even",[["prime",[2]],["divisible",[4,6,8]]]]]
 			assert.deepEqual(query().select().from(nums).groupBy(parity, prime).execute(), expectedObjs)
 		})
-
 
 		it.skip('Should FROM by multiple collections', function(){})
 		it.skip('Should WHERE by multiple fields', function(){})
