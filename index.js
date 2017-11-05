@@ -1,10 +1,12 @@
 function query() {
 
-	this.selectValue = function(o) { return o }
-	this.whereValue = function(o) { return o }
-	this.groupValue = function(o) { return o }
-	this.havingValue = function(o) { return o }
-	this.orderValue = function(o) { return o }
+	const defaultFn = o => { return o }
+
+	this.selectValue = defaultFn
+	this.whereValue = defaultFn
+	this.groupValue = defaultFn
+	this.havingValue = defaultFn
+	this.orderValue = defaultFn
 	this.fromValue = []
 	this.fromCalls = 0
 	this.selectCalls = 0
@@ -94,4 +96,4 @@ function query() {
 	return this
 }
 
-module.exports = query
+module.exports = function() {return new query()}
