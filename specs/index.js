@@ -180,7 +180,45 @@ describe('SQL - like parser', function() {
 			assert.deepEqual(query().select(student).from(teachers, students).where(teacherJoin).execute(), expectedObjs)
 		})
 
-		it.skip('Should WHERE by multiple fields', function(){})
+        it('Should WHERE by multiple fields', function(){
+            var teachers = [
+				{
+					teacherId: '1',
+					teacherName: 'Peter'
+				},
+				{
+					teacherId: '2',
+					teacherName: 'Anna'
+				}
+			];
+
+			var students = [
+				{
+					studentName: 'Michael',
+					tutor: '1'
+				},
+				{
+					studentName: 'Rose',
+					tutor: '2'
+				}
+			];
+
+			function teacherJoin(join) {
+				return join[0].teacherId === join[1].tutor;
+			}
+
+			function student(join) {
+				return {studentName: join[1].studentName, teacherName: join[0].teacherName};
+			}
+
+            function tutor1(join) {
+                  return join[1].tutor === "1";
+
+            }
+
+			const expectedObjs =[{"studentName":"Michael","teacherName":"Peter"}]
+			assert.deepEqual(query().select(student).from(teachers, students).where(teacherJoin).where(tutor1).execute(), expectedObjs)
+        })
 		it.skip('Should HAVING by multiple fields', function(){})
 		it.skip('Should ORDER GROUPBY by multiple fields', function(){})
 

@@ -3,7 +3,7 @@ function query() {
 	const defaultFn = o => { return o }
 
 	this.selectValue = defaultFn
-	this.whereValue = defaultFn
+	this.whereValue = []
 	this.groupValue = defaultFn
 	this.havingValue = defaultFn
 	this.orderValue = defaultFn
@@ -29,7 +29,7 @@ function query() {
 	}
 
 	this.where = function(v) {
-		this.whereValue = v
+        this.whereValue.push(v)
 		return this
 	}
 
@@ -80,17 +80,20 @@ function query() {
 		return arr.sort(this.orderValue)
 	}
 
+    const whereFilter = (arr) => {
+        return this.whereValue.reduce((p, i) => {
+            return p.filter(i)
+        }, arr.slice(0))
+    }
+
 	this.execute = function() {
 		if (this.selectCalls > 1) throw new Error('Duplicate SELECT')
 		if (this.fromCalls > 1) throw new Error('Duplicate FROM')
 		return orderFilter(havingFilter(
 			// Group by
-			groupBy(this.fromValue
-				// Where
-				.filter(this.whereValue))))
+			groupBy(whereFilter(this.fromValue))))
 		// Select
 			.map(this.selectValue)
-
 	}
 
 	return this
