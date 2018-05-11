@@ -85,7 +85,9 @@ function query() {
 
 	const orderFilter = (arr) => {
 		if (!this.orderCalls) return arr
-		return [].concat(...arr).sort(this.orderValue)
+		return [].concat(arr).sort((val1, val2) => {
+			return this.orderValue(val1[0] || val1, val2[0] || val2)
+		})
 	}
 
     const whereFilterOr = (arr) => {
@@ -107,10 +109,10 @@ function query() {
 	this.execute = function() {
 		if (this.selectCalls > 1) throw new Error('Duplicate SELECT')
 		if (this.fromCalls > 1) throw new Error('Duplicate FROM')
+		if (this.groupCalls > 1) throw new Error('Duplicate GROUPBY')
+		if (this.orderCalls > 1) throw new Error('Duplicate ORDERBY')
 		return orderFilter(havingFilter(
-			// Group by
 			groupBy(whereFilterAnd(whereFilterOr(this.fromValue)))))
-		// Select
 			.map(this.selectValue)
 	}
 

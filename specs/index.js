@@ -41,6 +41,14 @@ describe('SQL - like parser', function() {
 			assert.throws(() => { query().select().from([]).from([]).execute() }, 'Duplicate FROM')
 		})
 
+		it('Should throw exception if GROUPBY called multiple times', function() {
+			assert.throws(() => { query().select().groupBy([]).groupBy([]).execute() }, 'Duplicate GROUPBY')
+		})
+
+		it('Should throw exception if ORDERBY called multiple times', function() {
+			assert.throws(() => { query().select().orderBy([]).orderBy([]).execute() }, 'Duplicate ORDERBY')
+		})
+
 		it('Can omit FROM clause', function() {
 			assert.deepEqual(query().select().execute(), [])
 		})
@@ -233,8 +241,58 @@ describe('SQL - like parser', function() {
         assert.deepEqual(query().select().from(numbers).where(lessThan3, greaterThan4).execute(), expectedObjs)
       })
 
-		it.skip('Should HAVING by multiple fields', function(){})
-		it.skip('Should ORDER GROUPBY by multiple fields', function(){})
+		it('Should HAVING by multiple fields', function() {
+			var numbers = [1, 2, 1, 3, 5, 6, 1, 2, 5, 6];
+
+      function id(value) {
+        return value;
+      }
+
+      function frequency(group) {
+        return { value: group[0], frequency: group[1].length };
+      }
+			function greatThan1(group) {
+        return group[1].length > 1;
+      }
+
+      function isPair(group) {
+        return group[0] % 2 === 0;
+      }
+			assert.deepEqual(query().select(frequency).from(numbers).groupBy(id).having(greatThan1).having(isPair).execute(),  [{"value":2,"frequency":2},{"value":6,"frequency":2}])
+		})
+		
+		it('Should ORDER GROUPBY by multiple fields', function() {
+
+			var persons = [
+        {name: 'Peter', profession: 'teacher', age: 20, maritalStatus: 'married'},
+        {name: 'Michael', profession: 'teacher', age: 50, maritalStatus: 'single'},
+        {name: 'Peter', profession: 'teacher', age: 20, maritalStatus: 'married'},
+        {name: 'Anna', profession: 'scientific', age: 20, maritalStatus: 'married'},
+        {name: 'Rose', profession: 'scientific', age: 50, maritalStatus: 'married'},
+        {name: 'Anna', profession: 'scientific', age: 20, maritalStatus: 'single'},
+        {name: 'Anna', profession: 'politician', age: 50, maritalStatus: 'married'}
+      ];
+
+			function professionCount(group) {
+				return [group[0], group[1].length];
+			}
+
+			function profession(person) {
+        return person.profession;
+      }
+
+			function naturalCompare(value1, value2) {
+        if (value1 < value2) {
+          return -1;
+        } else if (value1 > value2) {
+          return 1;
+        } else {
+          return 0;
+        }
+      }
+			// SELECT profession, count(profession) FROM persons GROUPBY profession ORDER BY profession
+			assert.deepEqual(query().select(professionCount).from(persons).groupBy(profession).orderBy(naturalCompare).execute(), [["politician",1],["scientific",3],["teacher",3]])
+		})
 
 
 	})
